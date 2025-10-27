@@ -8,6 +8,7 @@ lazy val root = (project in file("."))
   )
 
 libraryDependencies ++= Seq(
-  "org.apache.wss4j" % "wss4j-ws-security-dom" % "2.4.1",
-  "org.apache.santuario" % "xmlsec" % "2.3.0"
+  "org.apache.ws.security"     % "wss4j"                      % "1.6.19",
+  "jakarta.xml.soap"           % "jakarta.xml.soap-api"       % "3.0.2",
+  "com.sun.xml.messaging.saaj" % "saaj-impl"                  % "3.0.4"
 )
