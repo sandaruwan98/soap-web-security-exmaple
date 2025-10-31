@@ -1,11 +1,9 @@
 
-import java.util.Properties
-import java.security.KeyStore
-import scala.util.{Try, Using}
 import SoapUtil.*
 import org.apache.ws.security.WSConstants
-import org.apache.ws.security.components.crypto.{CryptoFactory, Merlin}
 import org.apache.ws.security.message.{WSSecEncrypt, WSSecHeader, WSSecSignature}
+
+import scala.util.Try
 
 object SoapSecurity {
 
@@ -43,28 +41,5 @@ object SoapSecurity {
 
     // Convert back to string
     document.toXmlString
-  }
-
-  private def createCrypto(keystorePath: String, keystorePassword: String): Merlin = {
-    val properties = new Properties()
-    properties.setProperty("org.apache.wss4j.crypto.provider",
-      "org.apache.ws.security.components.crypto.Merlin")
-    properties.setProperty("org.apache.wss4j.crypto.merlin.keystore.type", "JKS")
-    properties.setProperty("org.apache.wss4j.crypto.merlin.keystore.password", keystorePassword)
-
-    val crypto = CryptoFactory.getInstance(properties).asInstanceOf[Merlin]
-
-    // Load keystore from classpath
-    val keystoreStream = Option(getClass.getClassLoader.getResourceAsStream(keystorePath)).getOrElse {
-      throw new IllegalArgumentException(s"Keystore not found in resources: $keystorePath")
-    }
-
-    Using(keystoreStream) { stream =>
-      val keystore = KeyStore.getInstance("JKS")
-      keystore.load(stream, keystorePassword.toCharArray)
-      crypto.setKeyStore(keystore)
-    }.get
-
-    crypto
   }
 }

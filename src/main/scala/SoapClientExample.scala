@@ -16,14 +16,28 @@ object SoapClientExample extends App {
   requestFileStream.close()
   responseFileStream.close()
 
-  // Configuration
+  // Sender's keystore (contains the sender's private key and recipient's public certificate)
+  // This keystore is loaded from the classpath resources folder
   val keystorePath = "sender-keystore.jks"
-  val keystorePassword = "changeit"
+  val keystorePassword = "changeit"  // Password to access the keystore file
+
+  // Sender's private key (used for signing outgoing messages and decrypting incoming responses)
+  // - Alias: identifies which key entry to use from the keystore
+  // - Password: protects the private key entry within the keystore
   val myKeyAlias = "senderkey"
   val myKeyPassword = "changeit"
+
+  // Recipient's public certificate (used for encrypting outgoing messages and verifying incoming signatures)
+  // This certificate is also stored in the sender's keystore for convenience
   val recipientCertAlias = "recipientcert"
 
-  // Sign and encrypt outgoing request
+  // ============================================================================
+  // Outgoing Request: Sign and Encrypt
+  // ============================================================================
+  // Operation flow:
+  // 1. Sign with sender's private key (myKeyAlias) - proves message authenticity
+  // 2. Encrypt with recipient's public certificate (recipientCertAlias) - ensures confidentiality
+  // Only the recipient with the matching private key can decrypt this message
   SoapSecurity.signAndEncryptMessage(
     soapRequest,
     keystorePath,
@@ -43,7 +57,13 @@ object SoapClientExample extends App {
       println(s"Failed to secure message: ${ex.getMessage}")
   }
 
-  // Decrypt and verify response
+  // ============================================================================
+  // Incoming Response: Decrypt and Verify
+  // ============================================================================
+  // Operation flow:
+  // 1. Decrypt with sender's private key (myKeyAlias) - the response was encrypted with sender's public certificate
+  // 2. Verify signature with recipient's public certificate (recipientCertAlias) - confirms response authenticity
+  // This ensures the response came from the expected recipient and was not tampered with
   SoapResponseHandler.decryptAndVerifyResponse(
     soapEncryptedResponse,
     keystorePath,
@@ -58,5 +78,4 @@ object SoapClientExample extends App {
     case Failure(ex) =>
       println(s"Failed to process response: ${ex.getMessage}")
   }
-
 }
